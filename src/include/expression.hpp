@@ -26,7 +26,7 @@ struct FunctionCalling {
   // function
   // a | func
   // func(a,b,"c",[1,2,"asdf"])
-  std::vector<ExpressionTypes> args;
+  std::vector<ExpressionCalling> args;
 };
 // Okay this should be calling an devaluating the inside code
 
@@ -48,6 +48,9 @@ struct VariableCalling {
 struct ExpressionCalling {
   // {{asdf | func}}
   // {{func([1,2,3])}}
+  // (1,2,3)
+  // [1,2,3,4]
+  // just saying
   std::vector<ExpressionTypes> blocks;
 };
 } // namespace Expression
