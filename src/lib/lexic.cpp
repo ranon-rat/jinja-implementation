@@ -110,7 +110,7 @@ void Parser::not_in_token(const std::vector<TokensOutput> &input,
     std::vector<ExpressionCalling> arguments;
     // vamos a pensar un poco uhhh
     Token current = next_token;
-    while (current != finish|| current !=Token::COMMA) {
+    while (current != finish&& current !=Token::COMMA) {
       arguments.emplace_back(
           parse_expression(input, index, Token::END_PARENTHESIS));
     }
