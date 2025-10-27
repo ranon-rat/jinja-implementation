@@ -31,8 +31,23 @@ bool is_token(const TokensOutput token) {
   return (std::is_same_v<DecayT, Token>);
 }
 // if true then break
-WhatShoulDo Parser::inside_token(std::vector<TokensOutput> input,
-                                 ExpressionTypesList output, size_t &index,
+void Parser::inside_quotes(const std::vector<TokensOutput> &input,
+                           ExpressionTypesList &output, size_t &index) {
+  using namespace Expression;
+  ValueCreation new_expression;
+  TokensOutput next_token = input[index++];
+  std::string internal_string = "";
+
+  // i can assume that the next token will be a quote
+  if (!is_token(next_token)) {
+    internal_string = std::get<std::string>(next_token);
+    index++;
+  }
+  new_expression.variable = internal_string;
+  output.emplace_back(new_expression);
+}
+WhatShoulDo Parser::inside_token(const std::vector<TokensOutput> &input,
+                                 ExpressionTypesList &output, size_t &index,
                                  const Token initial_token) {
   using namespace Expression;
   // i get some previous values
@@ -43,21 +58,10 @@ WhatShoulDo Parser::inside_token(std::vector<TokensOutput> input,
 
   switch (current_token) {
   case Token::DOUBLE_QUOTES:
-  case Token::SINGLE_QUOTES: {
-
-    ValueCreation new_expression;
-    TokensOutput next_token = input[index++];
-    std::string internal_string = "";
-
-    // i can assume that the next token will be a quote
-    if (!is_token(next_token)) {
-      internal_string = std::get<std::string>(next_token);
-      index++;
-    }
-    new_expression.variable = internal_string;
-    output.emplace_back(new_expression);
+  case Token::SINGLE_QUOTES:
+    inside_quotes(input, output, index);
     return CONTINUE;
-  }
+  
   default:
     return CONTINUE;
   }
@@ -65,7 +69,7 @@ WhatShoulDo Parser::inside_token(std::vector<TokensOutput> input,
 }
 
 Parser::ExpressionTypesList
-Parser::parse_expression(std::vector<TokensOutput> input, size_t &index,
+Parser::parse_expression(const std::vector<TokensOutput> &input, size_t &index,
                          const Token initial_token) {
   using namespace Expression;
   ExpressionTypesList output;

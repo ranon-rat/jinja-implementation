@@ -21,10 +21,11 @@ public:
 private:
   bool is_token(const TokensOutput token);
   // if true then break
-  WhatShoulDo inside_token(std::vector<TokensOutput> input, ExpressionTypesList output, size_t &index,
+  void inside_quotes(const std::vector<TokensOutput> &input, ExpressionTypesList &output, size_t &index);
+  WhatShoulDo inside_token(const std::vector<TokensOutput> &input, ExpressionTypesList& output, size_t &index,
                                        const Token initial_token);
   Token finish_token(const Token &initial);
-  ExpressionTypesList parse_expression(std::vector<TokensOutput>, size_t &index,
+  ExpressionTypesList parse_expression(const std::vector<TokensOutput>& input, size_t &index,
                                        const Token initial_token);
 
 public:
