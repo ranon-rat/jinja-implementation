@@ -27,8 +27,7 @@ enum class Types {
 };
 struct Value;
 // where i am storing the information
-using AcceptableKeyTypes =
-    std::variant<int, float, std::string>;
+using AcceptableKeyTypes = std::variant<int, float, bool, std::string>;
 using ObjectInitializer =
     std::initializer_list<std::pair<AcceptableKeyTypes, Value>>;
 using ObjectType = std::map<AcceptableKeyTypes, Value>;
@@ -144,18 +143,22 @@ struct Value {
     case Types::OBJECT: {
       ObjectType o = std::get<ObjectType>(variable);
       std::cout << pad << "{" << endline;
-      for (auto &[k,v] : o) {
+      for (auto &[k, v] : o) {
         std::cout << pad << "    ";
-        std::visit([&k](auto &&arg){
-          using DecayT = std::decay_t<decltype(arg)>;
-          if constexpr (std::is_same_v<DecayT,int>)
-                  std::cout << std::get<int> (k);
-          else if constexpr(std::is_same_v<DecayT, float>)
-                            std::cout << std::get<float> (k);
-          else if constexpr(std::is_same_v<DecayT, std::string>)
-                            std::cout << std::get<std::string> (k);
-        },k);
-        std::cout<<":"<<endline;
+        std::visit(
+            [&k](auto &&arg) {
+              using DecayT = std::decay_t<decltype(arg)>;
+              if constexpr (std::is_same_v<DecayT, int>)
+                std::cout << std::get<int>(k);
+              else if constexpr (std::is_same_v<DecayT, float>)
+                std::cout << std::get<float>(k);
+              else if constexpr (std::is_same_v<DecayT, std::string>)
+                std::cout << std::get<std::string>(k);
+              else if constexpr (std::is_same_v<DecayT, bool>)
+                std::cout << (std::get<bool>(k) ? "True" : "False");
+            },
+            k);
+        std::cout << ":" << endline;
         v.print(indent + 4);
       }
       std::cout << pad << "}" << endline;
@@ -173,6 +176,62 @@ struct Value {
     } break;
     }
   }
+  inline std::string to_string() {
+    switch (type) {
+    case Types::INT:
+      return std::to_string(std::get<int>(variable));
+    case Types::FLOAT:
+      return std::to_string(std::get<float>(variable));
+    case Types::DOUBLE:
+      return std::to_string(std::get<double>(variable));
+    case Types::STRING:
+      return std::get<std::string>(variable);
+    case Types::BOOL:
+      return std::get<bool>(variable) ? "True" : "False";
+    case Types::NIL:
+      return "NIL";
+    case Types::LIST: {
+      ListType list = std::get<ListType>(variable);
+      std::string output = "[";
+      for (size_t i = 0; i < list.size(); i++) {
+        output += list[i].to_string();
+        if (i != list.size() - 1) {
+          output += ", ";
+        }
+      }
+      output += "]";
+      return output;
+    }
+    case Types::OBJECT: {
+      ObjectType object = std::get<ObjectType>(variable);
+      std::string output = "{";
+      for (auto [k, v] : object) {
+        std::string key_str = std::visit(
+            [&k](auto &&arg) -> std::string {
+              using DecayT = std::decay_t<decltype(arg)>;
+              if constexpr (std::is_same_v<DecayT, int>)
+                return std::to_string(std::get<int>(k));
+              else if constexpr (std::is_same_v<DecayT, float>)
+                return std::to_string(std::get<float>(k));
+              else if constexpr (std::is_same_v<DecayT, std::string>)
+                return "\"" + std::get<std::string>(k) + "\"";
+              else if constexpr (std::is_same_v<DecayT, bool>)
+                return (std::get<bool>(k) ? "True" : "False");
+              else
+                return "<unknown>";
+            },
+            k);
+        output += key_str + ":";
+        output += v.to_string();
+        output += ",";
+      }
+      return output;
+    }
+    default:
+      return "Unkown";
+    }
+    return "";
+  }
 };
 // This will transform your arguments into a ListType that will be used for the
 // Value
@@ -180,7 +239,7 @@ inline ListType List(ListInitializer v) { return ListType(v.begin(), v.end()); }
 // This will transform your arguments into an ObjectType that will be used as a
 // value
 inline ObjectType Object(ObjectInitializer v) {
- 
+
   return ObjectType(v.begin(), v.end());
 }
 }; // namespace Jinja
