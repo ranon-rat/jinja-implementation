@@ -1,0 +1,14 @@
+    Welcome to restaurant chico pai
+
+
+{%for food in menu%}
+    name: {{ food.name }} cost: ${{food.cost}} 
+{%endfor%}
+
+{%for index, food in enumerate(menu)%}
+   {{ index }} name: {{food.name }} cost: ${{ food.cost }} 
+{%endfor%}
+
+{%for food in menu_name | upper%}
+    this should be uppered {{food}}
+{%endfor%}
