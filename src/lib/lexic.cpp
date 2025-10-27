@@ -3,6 +3,7 @@
 #include "statement.hpp"
 #include "tokenizer.hpp"
 #include "utilities.hpp"
+#include "values.hpp"
 #include <cstddef>
 #include <iostream>
 #include <string>
@@ -21,6 +22,8 @@ Token Parser::finish_token(const Token &initial) {
     return Token::END_CURLY_BRACKETS;
   case Token::OPEN_SQUARED_BRACKETS:
     return Token::END_SQUARED_BRACKETS;
+  case Token::OPEN_PARENTHESIS:
+    return Token::END_PARENTHESIS;
   default:
     return initial;
   }
@@ -48,11 +51,11 @@ void Parser::inside_quotes(const std::vector<TokensOutput> &input,
 }
 WhatShoulDo Parser::inside_token(const std::vector<TokensOutput> &input,
                                  ExpressionTypesList &output, size_t &index,
-                                 const Token, const Token finish) {
+                                 const Token finish) {
   using namespace Expression;
   // i get some previous values
   Token current_token = std::get<Token>(input[index]);
-  if (current_token == finish)
+  if (current_token == finish || current_token == Token::COMMA)
     return BREAK;
 
   switch (current_token) {
@@ -67,16 +70,66 @@ WhatShoulDo Parser::inside_token(const std::vector<TokensOutput> &input,
   return CONTINUE;
 }
 
-Parser::ExpressionTypesList
-Parser::parse_expression(const std::vector<TokensOutput> &input, size_t &index,
-                         const Token initial_token, const Token finish) {
+void Parser::not_in_token(const std::vector<TokensOutput> &input,
+                          ExpressionTypesList &output, size_t &index,
+                          const Token finish) {
   using namespace Expression;
-  ExpressionTypesList output;
+  const std::string &cell = std::get<std::string>(input[index]);
+  const char first_char = cell[0];
+  if (first_char >= '0' && first_char <= '9') {
+    ValueCreation new_expression;
+    Value value;
+    // that means that its a number btw
+    if (cell.find(".")) {
+      value = std::stod(cell);
+    } else {
+      value = std::stoi(cell);
+    }
+    new_expression.variable = value;
+    output.emplace_back(new_expression);
+    return;
+  }
+  if (cell == "True") {
+    output.emplace_back(ValueCreation{.variable = true});
+    return;
+  }
+  if (cell == "False") {
+    output.emplace_back(ValueCreation{.variable = false});
+    return;
+  }
+  // obviamente el siguiente token sabra si es el final
+  const Token next_token = std::get<Token>(input[index++]);
+  if (next_token == finish) {
+    // so i just insert the variable name, and i continue with my life :)
+    output.emplace_back(VariableCalling{.variable_name = cell});
+    return;
+  }
+  if (next_token == Token::OPEN_PARENTHESIS) {
+    /// tengo que pensar sobre esto.
+    std::string variable_name = cell;
+    FunctionCalling new_expression = {.function = variable_name, .args = {}};
+    std::vector<ExpressionCalling> arguments;
+    // vamos a pensar un poco uhhh
+    Token current = next_token;
+    while (current != finish) {
+      arguments.emplace_back(
+          parse_expression(input, index, Token::END_PARENTHESIS));
+    }
+    new_expression.args = arguments;
+    output.emplace_back(
+        FunctionCalling{.function = variable_name, .args = arguments} );
+  }
+}
+Expression::ExpressionCalling
+Parser::parse_expression(const std::vector<TokensOutput> &input, size_t &index,
+                         const Token finish) {
+  using namespace Expression;
+  ExpressionCalling output;
 
-  for (size_t i = index; i < input.size(); i++) {
+  for (size_t &i = index; i < input.size(); i++) {
     TokensOutput current_token = input[i];
     if (is_token(current_token)) {
-      auto should_do = (inside_token(input, output, i, initial_token, finish));
+      auto should_do = (inside_token(input, output.blocks, i, finish));
       if (should_do == BREAK)
         break;
       else if (should_do == CONTINUE)
@@ -87,12 +140,7 @@ Parser::parse_expression(const std::vector<TokensOutput> &input, size_t &index,
   }
   return output;
 }
-Parser::ExpressionTypesList
-Parser::parse_expression(const std::vector<TokensOutput> &input, size_t &index,
-                         const Token initial_token) {
-  return parse_expression(input, index, initial_token,
-                          finish_token(initial_token));
-}
+
 Parser::CodeBlockTypesList
 Parser::Parse(const std::vector<TokensOutput> &input) {
   CodeBlockTypesList output;

@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-
 namespace Jinja {
 
 class Parser {
@@ -21,15 +20,21 @@ public:
 private:
   bool is_token(const TokensOutput token);
   // if true then break
-  void inside_quotes(const std::vector<TokensOutput> &input, ExpressionTypesList &output, size_t &index);
-  WhatShoulDo inside_token(const std::vector<TokensOutput> &input, ExpressionTypesList& output, size_t &index,
-                                       const Token initial_token, const Token finish);
-  Token finish_token(const Token &initial);
-  ExpressionTypesList parse_expression(const std::vector<TokensOutput>& input, size_t &index,
-                                       const Token initial_token, const Token finish);
-  ExpressionTypesList parse_expression(const std::vector<TokensOutput>& input, size_t &index,
-                                       const Token initial_token);
+  void inside_quotes(const std::vector<TokensOutput> &input,
+                     ExpressionTypesList &output, size_t &index);
 
+  WhatShoulDo inside_token(const std::vector<TokensOutput> &input,
+                           ExpressionTypesList &output, size_t &index,
+                         const Token finish);
+// here i am managing the variable calling or the function calling, or the value creation
+  void not_in_token(const std::vector<TokensOutput> &input,
+                    ExpressionTypesList &output, size_t &index,
+                const Token finish);
+  Token finish_token(const Token &initial);
+  Expression::ExpressionCalling parse_expression(const std::vector<TokensOutput> &input,
+                                       size_t &index,
+                                       const Token finish);
+  
 
 public:
   Parser() {};

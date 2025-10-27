@@ -15,7 +15,6 @@ namespace Jinja {
 // these are the types that i will be accepting
 enum class Types {
   INT,
-  FLOAT,
   DOUBLE,
   BOOL,
   OBJECT,
@@ -27,7 +26,7 @@ enum class Types {
 };
 struct Value;
 // where i am storing the information
-using AcceptableKeyTypes = std::variant<int, float, bool, std::string>;
+using AcceptableKeyTypes = std::variant<int, double, bool, std::string>;
 using ObjectInitializer =
     std::initializer_list<std::pair<AcceptableKeyTypes, Value>>;
 using ObjectType = std::map<AcceptableKeyTypes, Value>;
@@ -37,7 +36,7 @@ using ListType = std::vector<Value>;
 
 // just a util that i will be using for various stuff
 // a typesafe union that i will be using for keeping track of my values
-using TypeValue = std::variant<int, float, double, bool, std::string,
+using TypeValue = std::variant<int, double, bool, std::string,
                                ObjectType, ListType, std::nullptr_t>;
 
 // with this we will be storing the variables that are going to be defined in an
@@ -58,8 +57,6 @@ struct Value {
     using DecayT = std::decay_t<T>;
     if constexpr (std::is_same_v<DecayT, int>)
       type = Types::INT;
-    else if constexpr (std::is_same_v<DecayT, float>)
-      type = Types::FLOAT;
     else if constexpr (std::is_same_v<DecayT, double>)
       type = Types::DOUBLE;
     else if constexpr (std::is_same_v<DecayT, bool>)
@@ -84,8 +81,7 @@ struct Value {
 
     if constexpr (std::is_same_v<DecayT, int>)
       type = Types::INT;
-    else if constexpr (std::is_same_v<DecayT, float>)
-      type = Types::FLOAT;
+    
     else if constexpr (std::is_same_v<DecayT, double>)
       type = Types::DOUBLE;
     else if constexpr (std::is_same_v<DecayT, bool>)
@@ -118,9 +114,7 @@ struct Value {
     case Types::INT:
       std::cout << pad << "[INT]" << std::get<int>(variable) << endline;
       break;
-    case Types::FLOAT:
-      std::cout << pad << "[FLOAT]" << std::get<float>(variable) << endline;
-      break;
+
     case Types::DOUBLE:
       std::cout << pad << "[DOUBLE]" << std::get<double>(variable) << endline;
       break;
@@ -150,8 +144,8 @@ struct Value {
               using DecayT = std::decay_t<decltype(arg)>;
               if constexpr (std::is_same_v<DecayT, int>)
                 std::cout << std::get<int>(k);
-              else if constexpr (std::is_same_v<DecayT, float>)
-                std::cout << std::get<float>(k);
+              else if constexpr (std::is_same_v<DecayT, double>)
+                std::cout << std::get<double>(k);
               else if constexpr (std::is_same_v<DecayT, std::string>)
                 std::cout << std::get<std::string>(k);
               else if constexpr (std::is_same_v<DecayT, bool>)
@@ -180,8 +174,7 @@ struct Value {
     switch (type) {
     case Types::INT:
       return std::to_string(std::get<int>(variable));
-    case Types::FLOAT:
-      return std::to_string(std::get<float>(variable));
+
     case Types::DOUBLE:
       return std::to_string(std::get<double>(variable));
     case Types::STRING:
@@ -211,8 +204,8 @@ struct Value {
               using DecayT = std::decay_t<decltype(arg)>;
               if constexpr (std::is_same_v<DecayT, int>)
                 return std::to_string(std::get<int>(k));
-              else if constexpr (std::is_same_v<DecayT, float>)
-                return std::to_string(std::get<float>(k));
+              else if constexpr (std::is_same_v<DecayT, double>)
+                return std::to_string(std::get<double>(k));
               else if constexpr (std::is_same_v<DecayT, std::string>)
                 return "\"" + std::get<std::string>(k) + "\"";
               else if constexpr (std::is_same_v<DecayT, bool>)
