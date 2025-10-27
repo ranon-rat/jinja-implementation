@@ -23,10 +23,13 @@ private:
   // if true then break
   void inside_quotes(const std::vector<TokensOutput> &input, ExpressionTypesList &output, size_t &index);
   WhatShoulDo inside_token(const std::vector<TokensOutput> &input, ExpressionTypesList& output, size_t &index,
-                                       const Token initial_token);
+                                       const Token initial_token, const Token finish);
   Token finish_token(const Token &initial);
   ExpressionTypesList parse_expression(const std::vector<TokensOutput>& input, size_t &index,
+                                       const Token initial_token, const Token finish);
+  ExpressionTypesList parse_expression(const std::vector<TokensOutput>& input, size_t &index,
                                        const Token initial_token);
+
 
 public:
   Parser() {};

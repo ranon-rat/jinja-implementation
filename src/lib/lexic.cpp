@@ -48,10 +48,9 @@ void Parser::inside_quotes(const std::vector<TokensOutput> &input,
 }
 WhatShoulDo Parser::inside_token(const std::vector<TokensOutput> &input,
                                  ExpressionTypesList &output, size_t &index,
-                                 const Token initial_token) {
+                                 const Token, const Token finish) {
   using namespace Expression;
   // i get some previous values
-  Token finish = finish_token(initial_token);
   Token current_token = std::get<Token>(input[index]);
   if (current_token == finish)
     return BREAK;
@@ -61,7 +60,7 @@ WhatShoulDo Parser::inside_token(const std::vector<TokensOutput> &input,
   case Token::SINGLE_QUOTES:
     inside_quotes(input, output, index);
     return CONTINUE;
-  
+
   default:
     return CONTINUE;
   }
@@ -70,14 +69,14 @@ WhatShoulDo Parser::inside_token(const std::vector<TokensOutput> &input,
 
 Parser::ExpressionTypesList
 Parser::parse_expression(const std::vector<TokensOutput> &input, size_t &index,
-                         const Token initial_token) {
+                         const Token initial_token, const Token finish) {
   using namespace Expression;
   ExpressionTypesList output;
 
   for (size_t i = index; i < input.size(); i++) {
     TokensOutput current_token = input[i];
     if (is_token(current_token)) {
-      auto should_do = (inside_token(input, output, i, initial_token));
+      auto should_do = (inside_token(input, output, i, initial_token, finish));
       if (should_do == BREAK)
         break;
       else if (should_do == CONTINUE)
@@ -87,6 +86,12 @@ Parser::parse_expression(const std::vector<TokensOutput> &input, size_t &index,
     std::cout << value << "\n";
   }
   return output;
+}
+Parser::ExpressionTypesList
+Parser::parse_expression(const std::vector<TokensOutput> &input, size_t &index,
+                         const Token initial_token) {
+  return parse_expression(input, index, initial_token,
+                          finish_token(initial_token));
 }
 Parser::CodeBlockTypesList
 Parser::Parse(const std::vector<TokensOutput> &input) {
