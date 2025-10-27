@@ -107,15 +107,13 @@ void Parser::not_in_token(const std::vector<TokensOutput> &input,
   if (next_token == Token::OPEN_PARENTHESIS) {
     /// tengo que pensar sobre esto.
     std::string variable_name = cell;
-    FunctionCalling new_expression = {.function = variable_name, .args = {}};
     std::vector<ExpressionCalling> arguments;
     // vamos a pensar un poco uhhh
     Token current = next_token;
-    while (current != finish) {
+    while (current != finish|| current !=Token::COMMA) {
       arguments.emplace_back(
           parse_expression(input, index, Token::END_PARENTHESIS));
     }
-    new_expression.args = arguments;
     output.emplace_back(
         FunctionCalling{.function = variable_name, .args = arguments} );
   }
