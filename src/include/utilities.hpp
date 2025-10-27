@@ -5,7 +5,6 @@ namespace Jinja{
  enum WhatShoulDo {
     CONTINUE,
     BREAK,
-    THROW,
     NOTHING
  };
 
