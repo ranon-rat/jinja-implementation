@@ -52,7 +52,6 @@ def execute():
         new=".o"
     )
     lib_static = join(dir_path, MOONMAKE_DIR, "lib", f"lib{PROJECT_NAME}.a")
-    print(lib_static)
     # Target files (binaries)
     target_files = [f for f in mmake.discover(join(dir_path, "src", "target"), ".cpp")]
     target_obj = mmake.change_extension(
@@ -76,7 +75,7 @@ def execute():
         target_bin, 
         target_obj, 
         f"g++ $< -o $@ {COMPILER_FLAGS} {LINK_FLAGS} {STATIC_LIBRARY} -l{PROJECT_NAME}",
-        dependency_file=True,
+        extra_dependencies=[lib_static]  # <-- AGREGAR ESTO
     )
     
     # Rule to compile target object files
@@ -84,9 +83,7 @@ def execute():
         target_obj, 
         [join(".", "src", "target", f) for f in target_files],
         f"g++ -c $< -o $@ {COMPILER_FLAGS} {INCLUDE_FLAGS} {IGNORE_FLAGS} {OBJ_FLAGS}",
-        dependency_file=True,
-        extra_dependencies=[lib_static]
-
+        dependency_file=True
     )
     
     # Rule to create the static library

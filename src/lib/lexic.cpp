@@ -76,7 +76,9 @@ void Parser::not_in_token(const std::vector<TokensOutput> &input,
   using namespace Expression;
   const std::string &cell = std::get<std::string>(input[index]);
   const char first_char = cell[0];
-  if (first_char >= '0' && first_char <= '9') {
+  // if its in range
+
+  if ((first_char >= '0' && first_char <= '9') || first_char=='-') {
     ValueCreation new_expression;
     Value value;
     // that means that its a number btw
@@ -110,12 +112,12 @@ void Parser::not_in_token(const std::vector<TokensOutput> &input,
     std::vector<ExpressionCalling> arguments;
     // vamos a pensar un poco uhhh
     Token current = next_token;
-    while (current != finish&& current !=Token::COMMA) {
+    while (current != finish && current != Token::COMMA)
       arguments.emplace_back(
           parse_expression(input, index, Token::END_PARENTHESIS));
-    }
+
     output.emplace_back(
-        FunctionCalling{.function = variable_name, .args = arguments} );
+        FunctionCalling{.function = variable_name, .args = arguments});
   }
 }
 Expression::ExpressionCalling
